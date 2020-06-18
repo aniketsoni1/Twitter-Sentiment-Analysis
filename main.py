@@ -1,19 +1,23 @@
-import sys,tweepy,csv,re
+import tweepy,csv,re
 from textblob import TextBlob
 import matplotlib.pyplot as plt
+from configparser import ConfigParser
 
-class SentimentAnalysis:
+
+class SentimentAnalysis(object):
 
     def __init__(self):
         self.tweets = []
         self.tweetText = []
+        self.config = ConfigParser()
+        self.config.read('config.ini')
 
     def DownloadData(self):
         # authenticating
-        consumerKey = "UqazNExtnFbte6rBZXXKCK6Qa"
-        consumerSecret = "62xRjFhWArfuNP1Z4B7a7BqWalE7IjCghN1maciUcmuVh7au4j"
-        accessToken = "119102998-MWD1yaXXv1AWXEu83GTbVjzkjJvBMbK20OUbQCgh"
-        accessTokenSecret = "aTXytDdX8qAF3UtyjMKhKvZ2ro1De4jOuRIZjrkeix8XX"
+        consumerKey = self.config['twitter']['consumerKey']
+        consumerSecret = self.config['twitter']['consumerSecret']
+        accessToken = self.config['twitter']['accessToken']
+        accessTokenSecret = self.config['twitter']['accessTokenSecret']
         auth = tweepy.OAuthHandler(consumerKey, consumerSecret)
         auth.set_access_token(accessToken, accessTokenSecret)
         api = tweepy.API(auth)
@@ -30,8 +34,6 @@ class SentimentAnalysis:
 
         # Use csv writer
         csvWriter = csv.writer(csvFile)
-
-
         # creating some variables to store info
         polarity = 0
         positive = 0
@@ -41,8 +43,6 @@ class SentimentAnalysis:
         wnegative = 0
         snegative = 0
         neutral = 0
-
-
         # iterating through tweets fetched
         for tweet in self.tweets:
             #Append to temp so that we can store in csv later. I use encode UTF-8
@@ -112,16 +112,16 @@ class SentimentAnalysis:
         print(str(wnegative) + "% people thought it was weakly negative")
         print(str(snegative) + "% people thought it was strongly negative")
         print(str(neutral) + "% people thought it was neutral")
-
         self.plotPieChart(positive, wpositive, spositive, negative, wnegative, snegative, neutral, searchTerm, NoOfTerms)
-
 
     def cleanTweet(self, tweet):
         # Remove Links, Special Characters etc from tweet
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t]) | (\w +:\ / \ / \S +)", " ", tweet).split())
 
-    # function to calculate percentage
     def percentage(self, part, whole):
+        """
+        # function to calculate percentage
+        """
         temp = 100 * float(part) / float(whole)
         return format(temp, '.2f')
 
@@ -137,6 +137,7 @@ class SentimentAnalysis:
         plt.tight_layout()
         plt.show()
 
-if __name__== "__main__":
+
+if __name__ == "__main__":
     sa = SentimentAnalysis()
     sa.DownloadData()
